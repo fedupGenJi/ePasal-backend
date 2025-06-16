@@ -4,7 +4,6 @@ use std::time::Duration;
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, Responder};
-use serde::Serialize;
 use reqwest::blocking::Client;
 
 fn wait_for_react() {
