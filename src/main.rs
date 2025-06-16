@@ -3,22 +3,9 @@ use std::thread;
 use std::time::Duration;
 
 use actix_cors::Cors;
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpServer, Responder};
 use serde::Serialize;
 use reqwest::blocking::Client;
-
-#[derive(Serialize)]
-struct Message {
-    message: String,
-}
-
-#[get("/api/hello")]
-async fn hello() -> impl Responder {
-    println!("📩 Got a request from React!");
-    HttpResponse::Ok().json(Message {
-        message: "Hello from Rust backend!".to_string(),
-    })
-}
 
 fn wait_for_react() {
     let client = Client::new();
@@ -64,7 +51,6 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .wrap(Cors::permissive())
-            .service(hello)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
