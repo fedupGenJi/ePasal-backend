@@ -1,72 +1,50 @@
-use std::net::{IpAddr, Ipv4Addr, UdpSocket};
-use std::process::Command;
-use std::thread;
-use std::time::Duration;
+mod routes {
+    pub mod auth;
+}
+mod databases;
 
 use actix_cors::Cors;
-use actix_web::{App, HttpServer};
-use reqwest::blocking::Client;
-
-fn get_local_ip() -> Option<IpAddr> {
-    let socket = UdpSocket::bind("0.0.0.0:0").ok()?;
-    socket.connect("8.8.8.8:80").ok()?;
-    socket.local_addr().map(|addr| addr.ip()).ok()
-}
-
-fn wait_for_react(react_url: &str) {
-    let client = Client::new();
-
-    for _ in 0..30 {
-        if let Ok(resp) = client.get(react_url).send() {
-            if resp.status().is_success() {
-                println!("✅ React dev server is ready at: {}", react_url);
-                return;
-            }
-        }
-        println!("⏳ Waiting for React dev server...");
-        thread::sleep(Duration::from_secs(1));
-    }
-    eprintln!("⚠️ React dev server did not become ready in time.");
-}
+use actix_web::{App, HttpServer, middleware::Logger, web};
+use local_ip_address::local_ip;
+use sqlx::PgPool;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Get local LAN IP
-    let local_ip = get_local_ip().unwrap_or(IpAddr::V4(Ipv4Addr::LOCALHOST));
-    let react_url = format!("http://{}:5173", local_ip);
-    let backend_url = format!("http://{}:8080", local_ip);
+    let host = "0.0.0.0";
+    let port = 8080;
 
-    // Spawn React dev server
-    thread::spawn(|| {
-        let react_path = "../react-frontend"; // Set path accordingly
-        let result = Command::new("cmd")
-            .args(&["/C", "npm", "run", "dev"])
-            .current_dir(react_path)
-            .spawn();
-
-        match result {
-            Ok(_) => println!("🚀 React dev server started"),
-            Err(e) => eprintln!("❌ Failed to start React dev server: {}", e),
+    let pool: PgPool = match databases::setup_backend().await {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("❌ Backend setup failed: {:?}", e);
+            std::process::exit(1);
         }
-    });
+    };
 
-    // Wait and open in browser
-    let react_url_clone = react_url.clone();
-    thread::spawn(move || {
-        wait_for_react(&react_url_clone);
-        if let Err(e) = open::that(&react_url_clone) {
-            eprintln!("❌ Failed to open browser: {}", e);
-        }
-    });
+    println!("Server running on:");
+    println!("  -> http://localhost:{}", port);
+    if let Ok(local_ip) = local_ip() {
+        println!("  -> http://{}:{}", local_ip, port);
+    }
 
-    println!("🌐 Backend available at:  {}", backend_url);
-    println!("🌐 React available at:    {}", react_url);
+    let local_ip = local_ip().unwrap_or_else(|_| "127.0.0.1".parse().unwrap());
+    let frontend_origin = format!("http://{}:5173", local_ip);
+    env_logger::init();
 
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
-            .wrap(Cors::permissive())
+            .app_data(web::Data::new(pool.clone()))
+            .wrap(Logger::default())
+            .wrap(
+                Cors::default()
+                    .allowed_origin(&frontend_origin)
+                    .allow_any_method()
+                    .allow_any_header()
+                    .supports_credentials()
+            )
+            .configure(routes::auth::init)
     })
-    .bind(("0.0.0.0", 8080))?
+    .bind((host, port))?
     .run()
     .await
 }
