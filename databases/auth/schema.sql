@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS logininfo (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    gmail VARCHAR(255) UNIQUE NOT NULL,
+    phoneNumber VARCHAR(20) UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    status VARCHAR(10) NOT NULL,
+    balance REAL DEFAULT 0.0
+);
