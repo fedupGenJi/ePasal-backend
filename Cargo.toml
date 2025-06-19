@@ -1,5 +1,5 @@
 [package]
-name = "backend"
+name = "ePasal"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,11 @@ actix-web = "4"
 actix-cors = "0.7"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-open = "3"
-tokio = { version = "1", features = ["macros", "process"] }
-reqwest = { version = "0.11", features = ["blocking"] }
+local-ip-address = "0.5"
+env_logger = "0.11"
+log = "0.4"
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "macros", "uuid"] }
+dotenvy = "0.15"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+anyhow = "1.0"
+futures = "0.3"
