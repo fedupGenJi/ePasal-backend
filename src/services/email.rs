@@ -6,7 +6,7 @@ pub async fn send_code_email(email: &str, code: &str) -> Result<(), Box<dyn std:
     let smtp_user = env::var("SMTP_EMAIL")?;
     let smtp_pass = env::var("SMTP_PASSWORD")?;
     let smtp_host = env::var("SMTP_SERVER")?;
-    let smtp_port: u16 = env::var("SMTP_PORT")?.parse()?; // Typically 587
+    let smtp_port: u16 = env::var("SMTP_PORT")?.parse()?;
 
     let html_body = format!(r#"
     <div style="background-color:#6b7280;padding:50px 0">
@@ -43,8 +43,8 @@ pub async fn send_code_email(email: &str, code: &str) -> Result<(), Box<dyn std:
         .credentials(creds)
         .build();
 
-    let result = mailer.send(&email_message);
-
+    /*let result =*/ let _ = mailer.send(&email_message);
+/*
     match result {
         Ok(_) => println!("✅ Email sent successfully"),
         Err(e) => {
@@ -52,6 +52,6 @@ pub async fn send_code_email(email: &str, code: &str) -> Result<(), Box<dyn std:
             return Err(Box::new(e));
         }
     }
-
+*/
     Ok(())
 }

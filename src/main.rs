@@ -1,6 +1,5 @@
-mod routes {
-    pub mod auth;
-}
+mod routes;
+
 mod databases;
 mod services {
     pub mod email;
@@ -46,6 +45,7 @@ async fn main() -> std::io::Result<()> {
                     .supports_credentials()
             )
             .configure(routes::auth::init)
+            .configure(routes::verify::init)
     })
     .bind((host, port))?
     .run()

@@ -40,3 +40,27 @@ pub async fn insert_temp_user(pool: &PgPool, data: SignupData) -> Result<TempUse
         code,
     })
 }
+
+pub async fn check_conflict_field(pool: &PgPool, email: &str, number: &str) -> Result<String, sqlx::Error> {
+    let email_exists = sqlx::query("SELECT 1 FROM logininfo WHERE email = $1")
+        .bind(email)
+        .fetch_optional(pool)
+        .await?
+        .is_some();
+
+    if email_exists {
+        return Ok("email".to_string());
+    }
+
+    let phone_exists = sqlx::query("SELECT 1 FROM logininfo WHERE phoneNumber = $1")
+        .bind(number)
+        .fetch_optional(pool)
+        .await?
+        .is_some();
+
+    if phone_exists {
+        return Ok("phoneNumber".to_string());
+    }
+
+    Ok("none".to_string()) 
+}
