@@ -69,7 +69,22 @@ pub async fn setup_backend() -> Result<PgPool> {
         println!("All required tables exist.");
     }
 
+    clear_temp_tables(&pool).await?;
     Ok(pool)
+}
+
+async fn clear_temp_tables(pool: &PgPool) -> Result<()> {
+    let temp_tables = ["temp_users"];
+
+    for &table in &temp_tables {
+        let query = format!("DELETE FROM {}", table);
+        pool.execute(query.as_str())
+            .await
+            .with_context(|| format!("Failed to clear temp table '{}'", table))?;
+    }
+
+    println!("Temporary tables cleared.");
+    Ok(())
 }
 
 pub mod auth;
