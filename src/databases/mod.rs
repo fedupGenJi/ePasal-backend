@@ -45,6 +45,7 @@ pub async fn setup_backend() -> Result<PgPool> {
 
     let schema_dirs = [
         "databases/auth",
+        "databases/temp",
         // Add other schema directories here as needed
     ];
 
@@ -52,6 +53,7 @@ pub async fn setup_backend() -> Result<PgPool> {
 
     let required_tables = [
         "logininfo",
+        "temp_users",
         // Add other expected table names here
     ];
 
@@ -69,3 +71,5 @@ pub async fn setup_backend() -> Result<PgPool> {
 
     Ok(pool)
 }
+
+pub mod auth;
