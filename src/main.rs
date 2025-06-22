@@ -2,6 +2,9 @@ mod routes {
     pub mod auth;
 }
 mod databases;
+mod services {
+    pub mod email;
+}
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, middleware::Logger, web};
