@@ -46,6 +46,7 @@ async fn main() -> std::io::Result<()> {
             )
             .configure(routes::auth::init)
             .configure(routes::verify::init)
+            .configure(routes::login::init)
     })
     .bind((host, port))?
     .run()
