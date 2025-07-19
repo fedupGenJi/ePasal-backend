@@ -60,9 +60,10 @@ pub async fn verify(
         return HttpResponse::InternalServerError().body("DB insert error");
     }
 
-    if let Err(e) = sqlx::query!("DELETE FROM temp_users WHERE temp_id = $1", temp_id)
-        .execute(db_pool.get_ref())
-        .await
+    if let Err(e) = sqlx::query("DELETE FROM temp_users WHERE temp_id = $1")
+    .bind(temp_id)
+    .execute(db_pool.get_ref())
+    .await
     {
         error!("Error deleting from temp_users: {:?}", e);
         return HttpResponse::InternalServerError().body("DB delete error");
