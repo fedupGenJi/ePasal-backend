@@ -4,6 +4,5 @@ CREATE TABLE IF NOT EXISTS logininfo (
     email VARCHAR(255) UNIQUE NOT NULL,
     phoneNumber VARCHAR(20) UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    status VARCHAR(10) NOT NULL,
-    balance REAL DEFAULT 0.0
+    status VARCHAR(10) NOT NULL
 );
