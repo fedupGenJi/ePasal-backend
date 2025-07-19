@@ -27,7 +27,8 @@ pub async fn login(
             if Argon2::default().verify_password(password.as_bytes(), &parsed_hash).is_ok() {
                 HttpResponse::Ok().json(json!({
                     "message": "Login successful",
-                    "user_id": user.id
+                    "user_id": user.id,
+                    "status": user.status
                 }))
             } else {
                 HttpResponse::Unauthorized().body("Password does not match")

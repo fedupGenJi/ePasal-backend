@@ -8,7 +8,6 @@ pub struct UserInfo {
     pub name: String,
     pub email: String,
     pub phonenumber: String,
-    pub balance: f32,
 }
 
 pub async fn get_user_info(
@@ -23,8 +22,7 @@ pub async fn get_user_info(
             id AS user_id,
             name,
             email,
-            phoneNumber,
-            balance
+            phoneNumber
         FROM logininfo
         WHERE id = $1
         "#
