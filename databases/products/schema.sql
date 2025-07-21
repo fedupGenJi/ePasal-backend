@@ -1,4 +1,4 @@
-CREATE TABLE laptop_details (
+CREATE TABLE IF NOT EXISTS laptop_details (
     id SERIAL PRIMARY KEY,
     brand_name TEXT NOT NULL,
     model_name TEXT NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE laptop_details (
     touchscreen BOOLEAN
 );
 
-CREATE TABLE laptop_side_images (
+CREATE TABLE IF NOT EXISTS laptop_side_images (
     id SERIAL PRIMARY KEY,
     laptop_id INTEGER REFERENCES laptop_details(id) ON DELETE CASCADE,
     image BYTEA
