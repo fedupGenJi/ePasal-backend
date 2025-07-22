@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS laptop_details (
     model_year INTEGER,
     display_name TEXT,
     product_type TEXT,
-    product_authetication TEXT,
+    product_authentication TEXT,
     suitable_for TEXT,
     color TEXT,
     processor_generation TEXT,

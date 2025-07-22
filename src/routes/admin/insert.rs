@@ -98,7 +98,7 @@ pub async fn insert_laptop(pool: web::Data<PgPool>, mut multipart: Multipart) ->
     let inserted_laptop_id: i32 = match sqlx::query(
         r#"
         INSERT INTO laptop_details (
-            brand_name, display_name, product_authetication, model_name, model_year,
+            brand_name, display_name, product_authentication, model_name, model_year,
             product_type, suitable_for, color, ram, ram_type,
             processor, processor_series, processor_generation, storage, storage_type,
             warranty, graphic, graphic_ram, display, display_type,
