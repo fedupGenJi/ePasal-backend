@@ -56,8 +56,7 @@ pub async fn setup_backend() -> Result<PgPool> {
         "logininfo",
         "temp_users",
         "laptop_details",
-        "laptop_side_images",
-        "messages"
+        "laptop_side_images"
         // Add other expected table names here
     ];
 
