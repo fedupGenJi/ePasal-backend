@@ -9,6 +9,7 @@ use actix_cors::Cors;
 use actix_web::{App, HttpServer, middleware::Logger, web};
 use local_ip_address::local_ip;
 use sqlx::PgPool;
+use actix_files as fs;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -44,10 +45,13 @@ async fn main() -> std::io::Result<()> {
                     .allow_any_header()
                     .supports_credentials()
             )
+            .service(fs::Files::new("/uploads", "./uploads").show_files_listing())
             .configure(routes::auth::init)
             .configure(routes::verify::init)
             .configure(routes::login::init)
             .configure(routes::user::init)
+            .configure(routes::admin::insert::init)
+            .configure(routes::admin::inventory::init)
     })
     .bind((host, port))?
     .run()
