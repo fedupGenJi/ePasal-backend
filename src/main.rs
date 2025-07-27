@@ -52,6 +52,7 @@ async fn main() -> std::io::Result<()> {
             .configure(routes::user::init)
             .configure(routes::admin::insert::init)
             .configure(routes::admin::inventory::init)
+            .configure(routes::chats::conversation::init)
     })
     .bind((host, port))?
     .run()

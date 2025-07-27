@@ -2,6 +2,16 @@ use anyhow::{anyhow, Context, Result};
 use sqlx::{PgPool, Executor};
 use std::{fs, path::Path};
 
+async fn is_ollama_running() -> bool {
+    let client = reqwest::Client::new();
+    client
+        .get("http://127.0.0.1:11434/api/tags")
+        .send()
+        .await
+        .map(|res| res.status().is_success())
+        .unwrap_or(false)
+}
+
 fn load_all_schemas(schema_dirs: &[&str]) -> Result<String> {
     let mut combined_sql = String::new();
 
@@ -38,6 +48,14 @@ async fn check_tables_exist(pool: &PgPool, tables: &[&str]) -> Result<bool> {
 }
 
 pub async fn setup_backend() -> Result<PgPool> {
+    if !is_ollama_running().await {
+        println!("⚠️  Ollama is not running at http://127.0.0.1:11434");
+        println!("Please start it with: `ollama serve` in another terminal.");
+        return Err(anyhow!("Ollama server not running"));
+    }
+
+    println!("✅ Ollama is running!");
+
     dotenvy::dotenv().ok();
 
     let database_url = std::env::var("DATABASE_URL").context("DATABASE_URL must be set")?;
@@ -47,6 +65,7 @@ pub async fn setup_backend() -> Result<PgPool> {
         "databases/auth",
         "databases/temp",
         "databases/products",
+        "databases/conversation",
         // Add other schema directories here as needed
     ];
 
@@ -57,6 +76,8 @@ pub async fn setup_backend() -> Result<PgPool> {
         "temp_users",
         "laptop_details",
         "laptop_side_images",
+        "messages",
+        "user_bot_settings",
         // Add other expected table names here
     ];
 
