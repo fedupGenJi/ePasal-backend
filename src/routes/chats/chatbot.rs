@@ -203,23 +203,25 @@ if let Some(json_str) = json_candidate {
             println!("Generating response links for found laptops...");
             let base_url = env::var("BASE_URL").unwrap_or_else(|_| "https://localhost:5173".to_string());
             let mut links = Vec::new();
-            for row in rows {
-                let id: i32 = row.try_get("id")?;
-                let name: String = row.try_get("display_name")?;
-let price: BigDecimal = row.try_get("show_price")?;
-let price_f64 = price.to_f64().unwrap_or(0.0);
-                println!("Laptop found: id={}, name={}, price={}", id, name, price);
-                links.push(format!(
-                    "{} - NPR {} - {}/products?id={}",
-                    name, price, base_url, id
-                ));
-            }
+for row in rows {
+    let id: i32 = row.try_get("id")?;
+    let name: String = row.try_get("display_name")?;
+    let price: BigDecimal = row.try_get("show_price")?;
+    let price_f64 = price.to_f64().unwrap_or(0.0);
 
-            let response_text = format!(
-                "Here are some laptops I found for you:\n{}",
-                links.join("\n")
-            );
+    links.push(format!(
+        "- [{}](https://{}/products?id={}) - NPR {:.2}",
+        name,
+        base_url.trim_start_matches("https://"),
+        id,
+        price_f64
+    ));
+}
 
+let response_text = format!(
+    "Here are some laptops I found for you:\n{}",
+    links.join("\n")
+);
             // Save bot reply in DB
             sqlx::query("INSERT INTO messages (user_id, content, timestamp, sender, receiver) VALUES ($1, $2, $3, 'bot', 'user')")
                 .bind(user_id)
