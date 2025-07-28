@@ -1,9 +1,6 @@
 mod routes;
-
 mod databases;
-mod services {
-    pub mod email;
-}
+mod services;
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, middleware::Logger, web};
@@ -53,6 +50,8 @@ async fn main() -> std::io::Result<()> {
             .configure(routes::admin::insert::init)
             .configure(routes::admin::inventory::init)
             .configure(routes::chats::conversation::init)
+            .configure(routes::admin::chat::init)
+            .configure(services::toppicks::init)
     })
     .bind((host, port))?
     .run()
