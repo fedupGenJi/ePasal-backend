@@ -126,18 +126,18 @@ async fn update_bot_status(
     let user_id = path.into_inner();
     let bot_enabled = payload.bot_enabled;
 
-    let result = sqlx::query!(
-        r#"
-        INSERT INTO user_bot_settings (user_id, bot_enabled)
-        VALUES ($1, $2)
-        ON CONFLICT (user_id) DO UPDATE
-        SET bot_enabled = EXCLUDED.bot_enabled
-        "#,
-        user_id,
-        bot_enabled
-    )
-    .execute(db.get_ref())
-    .await;
+    let result = sqlx::query(
+    r#"
+    INSERT INTO user_bot_settings (user_id, bot_enabled)
+    VALUES ($1, $2)
+    ON CONFLICT (user_id) DO UPDATE
+    SET bot_enabled = EXCLUDED.bot_enabled
+    "#
+)
+.bind(user_id)
+.bind(bot_enabled)
+.execute(db.get_ref())
+.await;
 
     match result {
         Ok(_) => HttpResponse::Ok().body("Bot status updated successfully"),
