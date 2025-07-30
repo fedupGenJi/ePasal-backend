@@ -2,6 +2,7 @@ use actix_web::{get,post, web, HttpResponse, Responder};
 use sqlx::{PgPool, Row};
 use serde::Deserialize;
 use serde::Serialize;
+use sqlx::FromRow;
 
 #[derive(Serialize)]
 struct User {
@@ -9,7 +10,7 @@ struct User {
     name: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, FromRow)]
 struct Message {
     id: i32,
     user_id: String,
@@ -67,27 +68,17 @@ async fn get_users(db: web::Data<PgPool>) -> impl Responder {
 async fn get_messages(path: web::Path<String>, db: web::Data<PgPool>) -> impl Responder {
     let user_id = path.into_inner();
 
-    let messages_res = sqlx::query_as!(
-        Message,
-        r#"
-        SELECT id, user_id, content, timestamp, sender, receiver
-        FROM messages
-        WHERE user_id = $1
-        ORDER BY timestamp ASC
-        "#,
-        user_id
-    )
-    .fetch_all(db.get_ref())
-    .await;
+    let messages_res = sqlx::query_as::<_, Message>(
+    "SELECT id, user_id, content, timestamp, sender, receiver FROM messages WHERE user_id = $1 ORDER BY timestamp ASC"
+)
+.bind(&user_id)
+.fetch_all(db.get_ref())
+.await;
 
-    let bot_enabled_res = sqlx::query_scalar!(
-        r#"
-        SELECT bot_enabled
-        FROM user_bot_settings
-        WHERE user_id = $1
-        "#,
-        user_id
-    )
+    let bot_enabled_res = sqlx::query_scalar::<_, bool>(
+    "SELECT bot_enabled FROM user_bot_settings WHERE user_id = $1"
+)
+.bind(&user_id)
     .fetch_optional(db.get_ref())
     .await;
 
