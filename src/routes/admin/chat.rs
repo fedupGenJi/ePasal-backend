@@ -2,6 +2,7 @@ use actix_web::{get,post, web, HttpResponse, Responder};
 use sqlx::{PgPool, Row};
 use serde::Deserialize;
 use serde::Serialize;
+use sqlx::FromRow;
 
 #[derive(Serialize)]
 struct User {
@@ -9,7 +10,7 @@ struct User {
     name: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, FromRow)]
 struct Message {
     id: i32,
     user_id: String,
@@ -67,27 +68,17 @@ async fn get_users(db: web::Data<PgPool>) -> impl Responder {
 async fn get_messages(path: web::Path<String>, db: web::Data<PgPool>) -> impl Responder {
     let user_id = path.into_inner();
 
-    let messages_res = sqlx::query_as!(
-        Message,
-        r#"
-        SELECT id, user_id, content, timestamp, sender, receiver
-        FROM messages
-        WHERE user_id = $1
-        ORDER BY timestamp ASC
-        "#,
-        user_id
-    )
-    .fetch_all(db.get_ref())
-    .await;
+    let messages_res = sqlx::query_as::<_, Message>(
+    "SELECT id, user_id, content, timestamp, sender, receiver FROM messages WHERE user_id = $1 ORDER BY timestamp ASC"
+)
+.bind(&user_id)
+.fetch_all(db.get_ref())
+.await;
 
-    let bot_enabled_res = sqlx::query_scalar!(
-        r#"
-        SELECT bot_enabled
-        FROM user_bot_settings
-        WHERE user_id = $1
-        "#,
-        user_id
-    )
+    let bot_enabled_res = sqlx::query_scalar::<_, bool>(
+    "SELECT bot_enabled FROM user_bot_settings WHERE user_id = $1"
+)
+.bind(&user_id)
     .fetch_optional(db.get_ref())
     .await;
 
@@ -126,18 +117,18 @@ async fn update_bot_status(
     let user_id = path.into_inner();
     let bot_enabled = payload.bot_enabled;
 
-    let result = sqlx::query!(
-        r#"
-        INSERT INTO user_bot_settings (user_id, bot_enabled)
-        VALUES ($1, $2)
-        ON CONFLICT (user_id) DO UPDATE
-        SET bot_enabled = EXCLUDED.bot_enabled
-        "#,
-        user_id,
-        bot_enabled
-    )
-    .execute(db.get_ref())
-    .await;
+    let result = sqlx::query(
+    r#"
+    INSERT INTO user_bot_settings (user_id, bot_enabled)
+    VALUES ($1, $2)
+    ON CONFLICT (user_id) DO UPDATE
+    SET bot_enabled = EXCLUDED.bot_enabled
+    "#
+)
+.bind(user_id)
+.bind(bot_enabled)
+.execute(db.get_ref())
+.await;
 
     match result {
         Ok(_) => HttpResponse::Ok().body("Bot status updated successfully"),

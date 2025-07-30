@@ -93,6 +93,7 @@ Until enough information is gathered, keep the conversation friendly and natural
         .await?;
 
     let response_json: Value = res.json().await?;
+    //println!("{}",response_json);
     let bot_response = response_json["message"]["content"]
         .as_str()
         .unwrap_or("Sorry, I didn’t understand that.")
