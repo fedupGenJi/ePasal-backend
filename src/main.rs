@@ -52,6 +52,7 @@ async fn main() -> std::io::Result<()> {
             .configure(routes::chats::conversation::init)
             .configure(routes::admin::chat::init)
             .configure(services::toppicks::init)
+            .configure(routes::product::init)
     })
     .bind((host, port))?
     .run()
