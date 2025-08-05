@@ -7,7 +7,7 @@ use bigdecimal::ToPrimitive;
 
 #[derive(Deserialize)]
 pub struct ProductQuery {
-    search: Option<String>, // unused for now
+    search: Option<String>,
     brands: Option<String>,
     min_price: Option<f64>,
     max_price: Option<f64>,
@@ -115,6 +115,60 @@ async fn get_filtered_products(
         param_index += 1;
     }
 
+        if let Some(search) = &query.search {
+        sql.push_str(&format!(
+            " AND to_tsvector('english', \
+                coalesce(brand_name, '') || ' ' || \
+                coalesce(model_name, '') || ' ' || \
+                coalesce(display_name, '') || ' ' || \
+                coalesce(product_type, '') || ' ' || \
+                coalesce(product_authentication, '') || ' ' || \
+                coalesce(suitable_for, '') || ' ' || \
+                coalesce(color, '') || ' ' || \
+                coalesce(processor_generation, '') || ' ' || \
+                coalesce(processor, '') || ' ' || \
+                coalesce(processor_series, '') || ' ' || \
+                coalesce(ram_type, '') || ' ' || \
+                coalesce(storage_type, '') || ' ' || \
+                coalesce(graphic, '') || ' ' || \
+                coalesce(display, '') || ' ' || \
+                coalesce(display_type, '') || ' ' || \
+                coalesce(power_supply, '') || ' ' || \
+                coalesce(battery, '') || ' ' || \
+                coalesce(warranty, '') \
+            ) @@ plainto_tsquery('english', ${})",
+            param_index
+        ));
+        args.add(search);
+        param_index += 1;
+
+        sql.push_str(&format!(
+            " ORDER BY ts_rank( \
+                to_tsvector('english', \
+                    coalesce(brand_name, '') || ' ' || \
+                    coalesce(model_name, '') || ' ' || \
+                    coalesce(display_name, '') || ' ' || \
+                    coalesce(product_type, '') || ' ' || \
+                    coalesce(product_authentication, '') || ' ' || \
+                    coalesce(suitable_for, '') || ' ' || \
+                    coalesce(color, '') || ' ' || \
+                    coalesce(processor_generation, '') || ' ' || \
+                    coalesce(processor, '') || ' ' || \
+                    coalesce(processor_series, '') || ' ' || \
+                    coalesce(ram_type, '') || ' ' || \
+                    coalesce(storage_type, '') || ' ' || \
+                    coalesce(graphic, '') || ' ' || \
+                    coalesce(display, '') || ' ' || \
+                    coalesce(display_type, '') || ' ' || \
+                    coalesce(power_supply, '') || ' ' || \
+                    coalesce(battery, '') || ' ' || \
+                    coalesce(warranty, '') \
+                ), plainto_tsquery('english', ${}) \
+            ) DESC",
+            param_index - 1
+        ));
+    }
+
     let laptops = query_as_with::<_, Laptop, _>(&sql, args)
         .fetch_all(pool.get_ref())
         .await;
@@ -171,7 +225,63 @@ async fn get_random_laptops(
         param_index += 1;
     }
 
-    sql.push_str(" ORDER BY RANDOM() LIMIT 16");
+    if let Some(search) = &query.search {
+        sql.push_str(&format!(
+            " AND to_tsvector('english', \
+                coalesce(brand_name, '') || ' ' || \
+                coalesce(model_name, '') || ' ' || \
+                coalesce(display_name, '') || ' ' || \
+                coalesce(product_type, '') || ' ' || \
+                coalesce(product_authentication, '') || ' ' || \
+                coalesce(suitable_for, '') || ' ' || \
+                coalesce(color, '') || ' ' || \
+                coalesce(processor_generation, '') || ' ' || \
+                coalesce(processor, '') || ' ' || \
+                coalesce(processor_series, '') || ' ' || \
+                coalesce(ram_type, '') || ' ' || \
+                coalesce(storage_type, '') || ' ' || \
+                coalesce(graphic, '') || ' ' || \
+                coalesce(display, '') || ' ' || \
+                coalesce(display_type, '') || ' ' || \
+                coalesce(power_supply, '') || ' ' || \
+                coalesce(battery, '') || ' ' || \
+                coalesce(warranty, '') \
+            ) @@ plainto_tsquery('english', ${})",
+            param_index
+        ));
+        args.add(search);
+        param_index += 1;
+
+        sql.push_str(&format!(
+            " ORDER BY ts_rank( \
+                to_tsvector('english', \
+                    coalesce(brand_name, '') || ' ' || \
+                    coalesce(model_name, '') || ' ' || \
+                    coalesce(display_name, '') || ' ' || \
+                    coalesce(product_type, '') || ' ' || \
+                    coalesce(product_authentication, '') || ' ' || \
+                    coalesce(suitable_for, '') || ' ' || \
+                    coalesce(color, '') || ' ' || \
+                    coalesce(processor_generation, '') || ' ' || \
+                    coalesce(processor, '') || ' ' || \
+                    coalesce(processor_series, '') || ' ' || \
+                    coalesce(ram_type, '') || ' ' || \
+                    coalesce(storage_type, '') || ' ' || \
+                    coalesce(graphic, '') || ' ' || \
+                    coalesce(display, '') || ' ' || \
+                    coalesce(display_type, '') || ' ' || \
+                    coalesce(power_supply, '') || ' ' || \
+                    coalesce(battery, '') || ' ' || \
+                    coalesce(warranty, '') \
+                ), plainto_tsquery('english', ${}) \
+            ) DESC",
+            param_index - 1
+        ));
+    }else{
+        sql.push_str(" ORDER BY RANDOM()");
+    }
+
+    sql.push_str(" LIMIT 16");
 
     let laptops = query_as_with::<_, Laptop, _>(&sql, args)
         .fetch_all(pool)
@@ -259,6 +369,60 @@ async fn recommendation_list(
         param_index += 1;
     }
 
+    if let Some(search) = &query.search {
+        filter_sql.push_str(&format!(
+            " AND to_tsvector('english', \
+                coalesce(brand_name, '') || ' ' || \
+                coalesce(model_name, '') || ' ' || \
+                coalesce(display_name, '') || ' ' || \
+                coalesce(product_type, '') || ' ' || \
+                coalesce(product_authentication, '') || ' ' || \
+                coalesce(suitable_for, '') || ' ' || \
+                coalesce(color, '') || ' ' || \
+                coalesce(processor_generation, '') || ' ' || \
+                coalesce(processor, '') || ' ' || \
+                coalesce(processor_series, '') || ' ' || \
+                coalesce(ram_type, '') || ' ' || \
+                coalesce(storage_type, '') || ' ' || \
+                coalesce(graphic, '') || ' ' || \
+                coalesce(display, '') || ' ' || \
+                coalesce(display_type, '') || ' ' || \
+                coalesce(power_supply, '') || ' ' || \
+                coalesce(battery, '') || ' ' || \
+                coalesce(warranty, '') \
+            ) @@ plainto_tsquery('english', ${})",
+            param_index
+        ));
+        filter_args.add(search);
+        param_index += 1;
+
+        filter_sql.push_str(&format!(
+            " ORDER BY ts_rank( \
+                to_tsvector('english', \
+                    coalesce(brand_name, '') || ' ' || \
+                    coalesce(model_name, '') || ' ' || \
+                    coalesce(display_name, '') || ' ' || \
+                    coalesce(product_type, '') || ' ' || \
+                    coalesce(product_authentication, '') || ' ' || \
+                    coalesce(suitable_for, '') || ' ' || \
+                    coalesce(color, '') || ' ' || \
+                    coalesce(processor_generation, '') || ' ' || \
+                    coalesce(processor, '') || ' ' || \
+                    coalesce(processor_series, '') || ' ' || \
+                    coalesce(ram_type, '') || ' ' || \
+                    coalesce(storage_type, '') || ' ' || \
+                    coalesce(graphic, '') || ' ' || \
+                    coalesce(display, '') || ' ' || \
+                    coalesce(display_type, '') || ' ' || \
+                    coalesce(power_supply, '') || ' ' || \
+                    coalesce(battery, '') || ' ' || \
+                    coalesce(warranty, '') \
+                ), plainto_tsquery('english', ${}) \
+            ) DESC",
+            param_index - 1
+        ));
+    }
+
     let all_candidates = query_as_with::<_, Laptop, _>(&filter_sql, filter_args)
         .fetch_all(pool)
         .await?;
@@ -271,7 +435,6 @@ async fn recommendation_list(
         for viewed in &viewed_laptops {
             let mut score = 0.0;
 
-            // Exact match categorical fields
             if laptop.brand_name == viewed.brand_name {
                 score += 1.0;
             }
@@ -306,7 +469,6 @@ async fn recommendation_list(
                 score += 0.6;
             }
 
-            // Numeric similarity
             let price_diff = (&laptop.show_price - &viewed.show_price).abs();
             let price_diff_f64 = price_diff.to_f64().unwrap_or(0.0);
             score += 1.0 / (1.0 + price_diff_f64 / 10000.0);
