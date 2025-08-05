@@ -37,7 +37,7 @@ pub struct Laptop {
     processor_generation: Option<String>,
     processor_series: Option<String>,
     ram: Option<i32>,
-    ram_tpe: Option<String>,
+    ram_type: Option<String>,
     storage: Option<i32>,
     storage_type: Option<String>,
     graphic: Option<String>,
@@ -290,7 +290,7 @@ async fn recommendation_list(
             if laptop.processor_series == viewed.processor_series {
                 score += 0.8;
             }
-            if laptop.ram_tpe == viewed.ram_tpe {
+            if laptop.ram_type == viewed.ram_type {
                 score += 0.6;
             }
             if laptop.storage_type == viewed.storage_type {
