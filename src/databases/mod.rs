@@ -66,6 +66,8 @@ pub async fn setup_backend() -> Result<PgPool> {
         "databases/temp",
         "databases/products",
         "databases/conversation",
+        "databases/khalti",
+        "databases/soldproducts",
         // Add other schema directories here as needed
     ];
 
@@ -78,6 +80,8 @@ pub async fn setup_backend() -> Result<PgPool> {
         "laptop_side_images",
         "messages",
         "user_bot_settings",
+        "khalti_temp_payments",
+        "laptops_sold",
         // Add other expected table names here
     ];
 
@@ -99,7 +103,7 @@ pub async fn setup_backend() -> Result<PgPool> {
 }
 
 async fn clear_temp_tables(pool: &PgPool) -> Result<()> {
-    let temp_tables = ["temp_users"];
+    let temp_tables = ["temp_users", "khalti_temp_payments"];
 
     for &table in &temp_tables {
         let query = format!("DELETE FROM {}", table);

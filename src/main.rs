@@ -56,6 +56,9 @@ async fn main() -> std::io::Result<()> {
             .configure(services::brandpage::init)
             .configure(services::search::init)
             .configure(services::suggestion::init)
+            .configure(routes::payment::khalti::init)
+            .configure(routes::payment::verifypay::init)
+            .configure(routes::admin::dashboard::init)
     })
     .bind((host, port))?
     .run()

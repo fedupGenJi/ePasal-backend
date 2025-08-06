@@ -28,7 +28,7 @@ pub struct ProductDetails {
     battery: Option<String>,
     power_supply: Option<String>,
     touchscreen: Option<bool>,
-    cost_price: f64,
+    cost_price: f32,
     quantity: i32,
     face_image: Option<String>,
     side_images: Vec<String>,
@@ -45,7 +45,7 @@ async fn get_product(
         "
         SELECT brand_name, display_name, model_name, model_year, product_type, product_authentication, suitable_for,
                color, processor_generation, processor, processor_series, ram, ram_type, storage, storage_type,
-               warranty, graphic, graphic_ram, display, display_type, battery, power_supply, touchscreen, cost_price,
+               warranty, graphic, graphic_ram, display, display_type, battery, power_supply, touchscreen, show_price,
                quantity, face_image_url
         FROM laptop_details
         WHERE id = $1
@@ -105,7 +105,7 @@ async fn get_product(
     battery: product.battery,
     power_supply: product.power_supply,
     touchscreen: product.touchscreen,
-    cost_price: product.cost_price.to_f64().unwrap_or(0.0),
+cost_price: product.show_price.map(|v| v.to_f32().unwrap_or(0.0)).unwrap_or(0.0),
     quantity: product.quantity.unwrap_or(0),
     face_image: product.face_image_url,
     side_images: side_images,
