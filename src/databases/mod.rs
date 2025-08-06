@@ -67,6 +67,7 @@ pub async fn setup_backend() -> Result<PgPool> {
         "databases/products",
         "databases/conversation",
         "databases/khalti",
+        "databases/soldproducts",
         // Add other schema directories here as needed
     ];
 
@@ -80,6 +81,7 @@ pub async fn setup_backend() -> Result<PgPool> {
         "messages",
         "user_bot_settings",
         "khalti_temp_payments",
+        "laptops_sold",
         // Add other expected table names here
     ];
 

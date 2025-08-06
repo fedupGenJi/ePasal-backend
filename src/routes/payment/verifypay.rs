@@ -14,19 +14,27 @@ pub async fn verify_payment(
     db: web::Data<PgPool>,
 ) -> impl Responder {
     let result = sqlx::query!(
-        "SELECT email FROM khalti_temp_payments WHERE pidx = $1",
-        data.pidx
-    )
-    .fetch_optional(db.get_ref())
-    .await;
+    "SELECT email, laptop_id FROM khalti_temp_payments WHERE pidx = $1",
+    data.pidx
+)
+.fetch_optional(db.get_ref())
+.await;
 
     match result {
         Ok(Some(row)) => {
             let email = row.email;
+            let laptop_id: i32 = row.laptop_id.parse::<i32>()
+    .expect("Failed to parse laptop_id as i32");
             // email-sending logic
             if let Err(err) = send_payment_status_email(&email, &data.status).await {
                 eprintln!("Failed to send email: {}", err);
             }
+            //store database
+            if data.status == "Completed" {
+            if let Err(err) = record_laptop_sale(db.get_ref(), laptop_id).await {
+                eprintln!("Failed to record laptop sale: {}", err);
+            }
+        }
 
             HttpResponse::Ok().json(serde_json::json!({
                 "message": "Payment verified"
@@ -78,6 +86,37 @@ pub async fn send_payment_status_email(email: &str, status: &str) -> Result<()> 
 
     mailer.send(&email).context("Failed to send email")?;
 
+    Ok(())
+}
+
+pub async fn record_laptop_sale(db: &PgPool, laptop_id: i32) -> Result<()> {
+    let mut tx = db.begin().await?;
+
+    let row = sqlx::query!(
+        "SELECT show_price FROM laptop_details WHERE id = $1",
+        laptop_id
+    )
+    .fetch_one(&mut *tx)
+    .await?;
+
+    let price = row.show_price;
+
+    sqlx::query!(
+        "INSERT INTO laptops_sold (laptop_id, price_at_sale) VALUES ($1, $2)",
+        laptop_id,
+        price
+    )
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query!(
+        "UPDATE laptop_details SET quantity = quantity - 1 WHERE id = $1",
+        laptop_id
+    )
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
     Ok(())
 }
 

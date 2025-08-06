@@ -1,4 +1,4 @@
-use actix_web::{post, web, HttpResponse, Responder, get, HttpRequest};
+use actix_web::{post, web, HttpResponse, Responder, get};
 use serde::{Deserialize, Serialize};
 use reqwest::Client;
 use std::env;
@@ -8,7 +8,7 @@ use sqlx::PgPool;
 pub struct InitiatePaymentRequest {
     product_id: String,
     product_name: String,
-    price: u32,
+    price: f32,
     customer_info: CustomerInfo,
 }
 
@@ -23,7 +23,7 @@ pub struct CustomerInfo {
 struct KhaltiPayload<'a> {
     return_url: &'a str,
     website_url: &'a str,
-    amount: u32,
+    amount: f32,
     purchase_order_id: &'a str,
     purchase_order_name: &'a str,
     customer_info: &'a CustomerInfo,
@@ -52,7 +52,7 @@ let website_url = format!("{}/payment/status", base_url);
     let khalti_payload = KhaltiPayload {
         return_url: &website_url,
         website_url: &return_url,
-        amount: payload.price * 100,
+        amount: payload.price * 100.0,
         purchase_order_id: &payload.product_id,
         purchase_order_name: &payload.product_name,
         customer_info: &payload.customer_info,
