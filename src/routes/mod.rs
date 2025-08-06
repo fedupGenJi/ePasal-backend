@@ -5,4 +5,4 @@ pub mod user;
 pub mod admin;
 pub mod chats;
 pub mod product;
-pub mod khalti;
+pub mod payment;
